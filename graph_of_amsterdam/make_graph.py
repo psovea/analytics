@@ -27,6 +27,8 @@ def make_edges(G, stops, line_info):
 
 def plot_graph(G):
     """Plot the NetworkX graph using matplotlib."""
+    # Set some options for the plot, like node color and size, edge width and
+    # with/without labels.
     options = {
         'node_color': 'blue',
         'node_size': 10,
@@ -34,6 +36,7 @@ def plot_graph(G):
         'with_labels': False
     }
 
+    # Draw the directed graph in a matplotlib figure.
     plt.figure(figsize=(7,7))
     nx.draw(G, nx.get_node_attributes(G, "pos"), **options)
     plt.show()
