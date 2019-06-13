@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import networkx as nx
+from random import randint
 
 
 def make_nodes(G, nodes_json):
@@ -22,7 +23,7 @@ def make_edges(G, stops, line_info):
         for i, stop_code in enumerate(lines):
             if (i < (len(lines) - 1) and G.has_node(stop_code) and
                     G.has_node(lines[i + 1])):
-                G.add_edge(stop_code, lines[i + 1], weight=0)
+                G.add_edge(stop_code, lines[i + 1], weight=randint(0, 1000))
 
 
 def add_weight(G, begin, end, weight):
