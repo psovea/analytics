@@ -25,8 +25,10 @@ def get_line_info_json():
     return line_info_json
 
 
-def get_coor_weight_json(G, stops):
+def get_coor_weight_json():
     """Make a JSON list with lat, lon and weight (punctuality)."""
+    G, stops = init_graph()
+
     stop_dict = {}
     for source, dest, attributes in G.edges.data():
         if dest in stop_dict:
@@ -39,9 +41,7 @@ def get_coor_weight_json(G, stops):
             ]
     return json.dumps(list(stop_dict.values()))
 
-
-if __name__ == "__main__":
-    # Initialize the graph and get the data from the static database.
+def init_graph():
     G = nx.DiGraph()
     G.edges.data('weight', default=1)
     stops = get_stops_json()
@@ -50,4 +50,4 @@ if __name__ == "__main__":
     # Fill the graph and plot it.
     mg.make_nodes(G, stops)
     mg.make_edges(G, stops, line_info)
-    mg.plot_graph(G)
+    return G, stops
