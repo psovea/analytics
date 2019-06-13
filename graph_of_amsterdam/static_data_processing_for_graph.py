@@ -2,12 +2,12 @@ import requests
 import networkx as nx
 import make_graph as mg
 
+# The url for the endpoint of the static database.
 url = "http://18.216.203.6:5000/"
 
 
 def get_stops_json():
-    """
-    """
+    """Get data about stops from the static database."""
     query = "get-stops"
 
     r = requests.get(url + query)
@@ -16,6 +16,7 @@ def get_stops_json():
 
 
 def get_line_info_json():
+    """Get data about lines from the static database. """
     query = "get-line-info"
     r = requests.get(url + query)
     line_info_json = r.json()
