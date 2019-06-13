@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import networkx as nx
-from random import randint
 
 
 def make_nodes(G, nodes_json):
@@ -12,7 +11,7 @@ def make_nodes(G, nodes_json):
                    pos=(float(stop["lat"]), float(stop["lon"])))
 
 
-def make_edges(G, stops, line_info):
+def make_edges(G, stops, line_info, weights):
     """Add edges between nodes in the graph to the NetworkX graph."""
     # Make a 2d list of, in order, stopnumbers per line.
     all_lines = [[line["stop_code"] for line in lines] for lines in line_info]
@@ -23,7 +22,13 @@ def make_edges(G, stops, line_info):
         for i, stop_code in enumerate(lines):
             if (i < (len(lines) - 1) and G.has_node(stop_code) and
                     G.has_node(lines[i + 1])):
-                G.add_edge(stop_code, lines[i + 1], weight=randint(0, 1000))
+                start = stop_code
+                end = lines[i + 1]
+                weight = 0
+                if start in weights.keys() and end in weights[start].keys():
+                    weight = weights[start][end]
+
+                G.add_edge(stop_code, lines[i + 1], weight=weight)
 
 
 def add_weight(G, begin, end, weight):
