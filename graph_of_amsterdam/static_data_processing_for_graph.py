@@ -6,42 +6,28 @@ url = "http://18.216.203.6:5000/"
 
 
 def get_stops_json():
-    # Send a request to the MYSQL database to get all the stops in JSON format
-    # url = "http://18.216.203.6:5000/"
-    query = "get-stops?town=Amsterdam"
+    """
+    """
+    query = "get-stops"
 
     r = requests.get(url + query)
     stops_json = r.json()
     return stops_json
 
 
-def get_transport_line_stops_json():
-    # Send a request to the MYSQL database to get all the Transport Line Stops
-    # url = "http://184.72.120.43:9800/"
-    query = "get-lines"
-
-    r = requests.get(url + query)
-    transport_line_stops_json = r.json()
-    return transport_line_stops_json
-
-
-def get_transport_line_json():
-    # Send a request to the MYSQL database to get all the Transport Line
-    # url = "http://184.72.120.43:9800/"
+def get_line_info_json():
     query = "get-line-info"
-
     r = requests.get(url + query)
-    transport_line_json = r.json()
-    return transport_line_json
+    line_info_json = r.json()
 
-
-def make_edge_data():
-    pass
+    return line_info_json
 
 
 if __name__ == "__main__":
-    # Make a directed graph in networkx
-    # print(get_stops_json()[0])
     G = nx.DiGraph()
-    mg.make_nodes(G, get_stops_json())
+    stops = get_stops_json()
+    line_info = get_line_info_json()
+
+    mg.make_nodes(G, stops)
+    mg.make_edges(G, stops, line_info)
     mg.plot_graph(G)
