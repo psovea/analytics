@@ -1,4 +1,5 @@
 import requests
+import json
 import networkx as nx
 import make_graph as mg
 
@@ -17,16 +18,32 @@ def get_stops_json():
 
 def get_line_info_json():
     """Get data about lines from the static database. """
-    query = "get-line-info"
+    query = "get-line-info?operator=GVB"
     r = requests.get(url + query)
     line_info_json = r.json()
 
     return line_info_json
 
 
+def get_coor_weight_json(G, stops):
+    """Make a JSON list with lat, lon and weight (punctuality)."""
+    stop_dict = {}
+    for source, dest, attributes in G.edges.data():
+        if dest in stop_dict:
+            stop_dict[dest][2] += attributes['weight']
+        else:
+            stop_dict[dest] = [
+                G.nodes[dest]['pos'][0],
+                G.nodes[dest]['pos'][1],
+                attributes['weight']
+            ]
+    return json.dumps(list(stop_dict.values()))
+
+
 if __name__ == "__main__":
     # Initialize the graph and get the data from the static database.
     G = nx.DiGraph()
+    G.edges.data('weight', default=1)
     stops = get_stops_json()
     line_info = get_line_info_json()
 
