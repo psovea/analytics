@@ -3,7 +3,7 @@ Python analytics from Prometheus DB
 
 
 ## Graph of amsterdam
-We made a Graph of all the stops in amsterdam using NetworkX. The graph can be made with the init_graph(weights) function from get_graph.py.
+We made a Graph of all the stops in amsterdam using NetworkX. The graph can be made with the `init_graph(weights)` function from get_graph.py.
 
 ### Networkx
 To install NetworkX (Python):
