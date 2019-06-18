@@ -48,6 +48,6 @@ def plot_graph(G):
     }
 
     # Draw the directed graph in a matplotlib figure.
-    plt.figure(figsize=(7,7))
+    plt.figure(figsize=(7, 7))
     nx.draw(G, nx.get_node_attributes(G, "pos"), **options)
     plt.show()
