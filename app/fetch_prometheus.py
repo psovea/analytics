@@ -129,7 +129,6 @@ def heatmap_punctuality(period='d', vehicle_type=None, operator=None,
         for l in data:
             begin, end = l['metric']['stop_begin'], l['metric']['stop_end']
             value = float(l['value'][1])
-            # print(value)
             if begin not in dct.keys():
                 dct[begin] = {}
             dct[begin][end] = value
