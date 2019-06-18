@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime
 import numpy
+import json
 
 # URL for the Prometheus database.
 prom_database_addr = 'http://18.224.29.151:9090/api/v1/query?query='
@@ -129,6 +130,7 @@ def heatmap_punctuality(period='d', vehicle_type=None, operator=None,
         for l in data:
             begin, end = l['metric']['stop_begin'], l['metric']['stop_end']
             value = float(l['value'][1])
+            # print(value)
             if begin not in dct.keys():
                 dct[begin] = {}
             dct[begin][end] = value
@@ -137,3 +139,22 @@ def heatmap_punctuality(period='d', vehicle_type=None, operator=None,
               % (result['status']))
 
     return dct
+
+
+def donut_districts(amount=1, unit='d'):
+    """Make a JSON object with mean delay per city district."""
+    query = 'sum(increase(location_punctuality[%d%s])) by (district)' %
+            (amount, unit)
+    result = make_prom_query(query)
+
+    dct = {}
+    if check_json_result(result):
+        data = get_data_json_result(result)
+        for l in data:
+            dct[l['metric']['district']] = float(l['value'][1])
+    else:
+        print('Query to Prometheus database went wrong, status error code: %s'
+              % (result['status']))
+
+    return [{key: val} for (key, val) in
+            sorted(dct.items(), key=lambda kv: kv[1], reverse=True)]
