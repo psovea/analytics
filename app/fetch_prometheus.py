@@ -2,13 +2,20 @@ import requests
 from datetime import datetime
 import numpy
 
-prom_database_addr = 'http://18.216.203.6:9090/api/v1/query?query='
+prom_database_addr = 'http://18.224.29.151:9090/api/v1/query?query='
 time_period = 5  # in minutes
 
 def make_prom_query(query):
     """Make a query to the Prometheus database and returns the result."""
-    request_result = requests.get(prom_database_addr + query)
-    return request_result.json()
+    result = {}
+    try:
+        request_result = requests.get(prom_database_addr + query)
+        result = request_result.json()
+    except requests.exceptions.ConnectionError as e:
+        print("error message:", e)
+        result['status'] = "error"
+
+    return result
 
 def check_json_result(json_result):
     """Check whether the query was succesful or not."""
@@ -85,29 +92,21 @@ def top_ten_bottlenecks(start_day_time, end_day_time, days, period, districts=[]
     print(results)
     return results
 
-def heatmap_punctuality(time=15, unit='s', vehicle_type=None):
+def heatmap_punctuality(time, unit, vehicle_type=None):
     """Calculate percentage of metro's that is delayed."""
     transport_type_query = 'transport_type="%s"' % vehicle_type if vehicle_type else ''
-    # query = 'increase(location_punctuality{%s}[%s%s])' % (transport_type_query, time, unit)
-    query = 'location_punctuality{}[15s]'
+
+    query = 'increase(location_punctuality{%s}[%s%s] offset 1d)' % (transport_type_query, time, unit)
     result = make_prom_query(query)
-    # print(result)
+
     lst = []
     dct = {}
-    # if check_json_result(result):
-    #     data = get_data_json_result(result)
-    #     for l in data:
-    #         value_lst = [l['metric']['stop_begin'], l['metric']['stop_end'], float(l['values'][1])]
-    #         lst.append(value_lst)
-    #         print(value_lst)
-    # else:
-    #     print('Query to Prometheus database went wrong, status error code: %s'
-    #           % (result['status']))
+
     if check_json_result(result):
         data = get_data_json_result(result)
         for l in data:
             begin, end = l['metric']['stop_begin'], l['metric']['stop_end']
-            value = float(l['values'][0][1])
+            value = float(l['value'][1])
             if begin not in dct.keys():
                 dct[begin] = {}
             dct[begin][end] = value
@@ -116,3 +115,6 @@ def heatmap_punctuality(time=15, unit='s', vehicle_type=None):
               % (result['status']))
 
     return dct
+
+if __name__ == "__main__":
+    print(heatmap_punctuality(1, "d", "BUS"))

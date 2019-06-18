@@ -5,7 +5,7 @@ import make_graph as mg
 import fetch_prometheus as fp
 
 # The url for the endpoint of the static database.
-url = "http://18.216.203.6:5000/"
+url = "http://18.224.29.151:5000/"
 
 
 def get_stops_json():
