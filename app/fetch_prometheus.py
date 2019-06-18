@@ -1,7 +1,6 @@
 import requests
 from datetime import datetime
 import numpy
-import json
 
 # URL for the Prometheus database.
 prom_database_addr = 'http://18.224.29.151:9090/api/v1/query?query='
