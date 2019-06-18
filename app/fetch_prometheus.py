@@ -99,30 +99,36 @@ def top_ten_bottlenecks(start_day_time, end_day_time, days, period,
     return results
 
 
-def heatmap_punctuality(time=15, unit='s', vehicle_type=None):
+def heatmap_punctuality(period='d', vehicle_type=None, operator=None,
+                        area=None):
     """Calculate punctuality between 2 locations to show it on the heatmap."""
-    transport_type_query = 'transport_type="%s"' % vehicle_type if \
-                           vehicle_type else ''
-    # query = 'increase(location_punctuality{%s}[%s%s])' % (transport_type_query, time, unit)
-    query = 'location_punctuality{}[15s]'
+    # Select the correct labels based on given filters.
+    labels = ''
+    if vehicle_type:
+        labels += 'transport_type="%s"' % vehicle_type
+
+    if operator and vehicle_type:
+        labels += ', operator="%s"' % operator
+    elif operator:
+        labels += 'operator="%s"' % operator
+
+    if (area and vehicle_type) or (area and operator):
+        labels += ', district="%s"' % area
+    elif area:
+        labels += 'district="%s"' % area
+
+    # Make and do the query.
+    query = 'increase(location_punctuality{%s}[1%s])' % (labels,
+                                                         period)
     result = make_prom_query(query)
-    # print(result)
-    lst = []
+
+    # Make a dictionary with weights as values and stopcodes as keys.
     dct = {}
-    # if check_json_result(result):
-    #     data = get_data_json_result(result)
-    #     for l in data:
-    #         value_lst = [l['metric']['stop_begin'], l['metric']['stop_end'], float(l['values'][1])]
-    #         lst.append(value_lst)
-    #         print(value_lst)
-    # else:
-    #     print('Query to Prometheus database went wrong, status error code: %s'
-    #           % (result['status']))
     if check_json_result(result):
         data = get_data_json_result(result)
         for l in data:
             begin, end = l['metric']['stop_begin'], l['metric']['stop_end']
-            value = float(l['values'][0][1])
+            value = float(l['value'][1])
             if begin not in dct.keys():
                 dct[begin] = {}
             dct[begin][end] = value
