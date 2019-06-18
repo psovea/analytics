@@ -26,10 +26,11 @@ def get_line_info_json():
     return line_info_json
 
 
-def get_coor_weight_json():
+def get_coor_weight_json(period='d', vehicle_type=None, operator=None,
+                         area=None):
     """Make a JSON list with lat, lon and weight (punctuality)."""
     # Get the current (last 15 sec) weights for the edges from Prometheus.
-    current_data = fp.heatmap_punctuality()
+    current_data = fp.heatmap_punctuality(period, vehicle_type, operator, area)
 
     # Make the directed graph.
     G, stops = init_graph(current_data)
