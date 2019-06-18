@@ -3,7 +3,7 @@ from datetime import datetime
 import numpy
 
 # URL for the Prometheus database.
-prom_database_addr = 'http://18.216.203.6:9090/api/v1/query?query='
+prom_database_addr = 'http://18.224.29.151:9090/api/v1/query?query='
 
 
 def make_prom_query(query):
