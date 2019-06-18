@@ -7,7 +7,7 @@ def make_nodes(G, nodes_json):
     for stop in nodes_json:
         # The node label is it's stopcode. Other attributes are the name of the
         # station and it's position in latitude, longitude.
-        G.add_node(stop["stop_code"], name=stop["stop_name"],
+        G.add_node(stop["stop_code"], name=stop["name"],
                    pos=(float(stop["lat"]), float(stop["lon"])))
 
 
