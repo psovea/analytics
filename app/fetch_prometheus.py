@@ -140,8 +140,8 @@ def heatmap_punctuality(period='d', vehicle_type=None, operator=None,
 
 def donut_districts(amount=1, unit='d'):
     """Make a JSON object with mean delay per city district."""
-    query = 'sum(increase(location_punctuality[%d%s])) by (district)' %
-            (amount, unit)
+    query = 'sum(increase(location_punctuality[%d%s])) by (district)' % (
+            amount, unit)
     result = make_prom_query(query)
 
     dct = {}
