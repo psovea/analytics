@@ -46,7 +46,7 @@ def get_coor_weight_json(period='d', vehicle_type=None, operator=None,
                 G.nodes[dest]['pos'][1],
                 attributes['weight']
             ]
-    return json.dumps(list(stop_dict.values()))
+    return list(stop_dict.values())
 
 
 def init_graph(weights):

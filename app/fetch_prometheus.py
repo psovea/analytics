@@ -7,7 +7,6 @@ import urllib.parse
 # prom_database_addr = 'http://18.224.29.151:9090/api/v1/query?query='
 prom_database_addr = 'http://localhost:9090/api/v1/query?query='
 
-
 def make_prom_query(query):
     """Make a query to the Prometheus database and returns the result."""
     request_result = requests.get(prom_database_addr + urllib.parse.quote(query))
