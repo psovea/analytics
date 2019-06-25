@@ -4,8 +4,8 @@ import numpy
 import urllib.parse
 
 # URL for the Prometheus database.
-# prom_database_addr = 'http://18.224.29.151:9090/api/v1/query?query='
-prom_database_addr = 'http://localhost:9090/api/v1/query?query='
+prom_database_addr = 'http://18.224.29.151:9090/api/v1/query?query='
+# prom_database_addr = 'http://localhost:9090/api/v1/query?query='
 
 def make_prom_query(query):
     """Make a query to the Prometheus database and returns the result."""
@@ -78,10 +78,9 @@ def create_prom_query(query_json):
         elif component_type == 'by':
             res_str += ' by (' + ','.join(inner) + ')'
         elif component_type == 'topk':
-            print(inner)
             res_str += ' topk(' + inner['k'] + ',' + create_prom_query(inner['subquery']) + ')'
-        elif component_type == '+':
-            res_str += " + ".join([create_prom_query(subquery) for subquery in inner])
+        elif component_type == '+' or component_type == '-' or component_type == '*' or component_type == '/':
+            res_str += (" "+ component_type +" ").join([create_prom_query(subquery) for subquery in inner])
         else:
             res_str += str(component_type) + '(' + str(create_prom_query(inner)) + ')'
     return res_str
@@ -90,9 +89,7 @@ def create_prom_query(query_json):
 def execute_json_prom_query(json_query):
     """Executes the query from the json_query and returns the result"""
     query_string = create_prom_query(json_query)
-    print(query_string)
     query_res = make_prom_query(query_string)
-    print(query_res)
     if check_json_result(query_res):
         return get_data_json_result(query_res)
     else:
@@ -168,7 +165,6 @@ def top_ten_bottlenecks(start_day_time, end_day_time, days, period,
     results = [{'metric': dict(filt), 'value': val} for filt, val in
                results.items()]
     results.sort(key=lambda x: x['value'], reverse=True)
-    print(results)
     return results
 
 
