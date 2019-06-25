@@ -1,6 +1,9 @@
 # Analytics
 Python analytics from Prometheus DB
 
+## Fetch prometheus
+In fetch_prometheus.py functions are written that query the Prometheus database. Also some functions are made that create the queries and its labels.
+
 
 ## Graph of amsterdam
 We made a Graph of all the stops in amsterdam using NetworkX. The graph can be made with the `init_graph(weights)` function from get_graph.py.
