@@ -6,7 +6,7 @@ In fetch_prometheus.py functions are written that query the Prometheus database.
 
 
 ## Graph of amsterdam
-We made a Graph of all the stops in amsterdam using NetworkX. The graph can be made with the `init_graph(weights)` function from get_graph.py.
+We made a Graph of all the stops in amsterdam using NetworkX. This graph can be used for testing and for a visual overview of the stops. The graph can be made with the `init_graph(weights)` function from get_graph.py.
 
 ### Networkx
 To install NetworkX (Python):
