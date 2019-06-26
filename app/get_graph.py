@@ -1,5 +1,4 @@
 import requests
-import json
 import networkx as nx
 import make_graph as mg
 import fetch_prometheus as fp

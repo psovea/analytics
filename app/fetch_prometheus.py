@@ -5,11 +5,12 @@ import urllib.parse
 
 # URL for the Prometheus database.
 prom_database_addr = 'http://18.224.29.151:9090/api/v1/query?query='
-# prom_database_addr = 'http://localhost:9090/api/v1/query?query='
+
 
 def make_prom_query(query):
     """Make a query to the Prometheus database and returns the result."""
-    request_result = requests.get(prom_database_addr + urllib.parse.quote(query))
+    request_result = requests.get(prom_database_addr +
+                                  urllib.parse.quote(query))
     return request_result.json()
 
 
@@ -29,65 +30,75 @@ def get_type_json_result(json_result):
 
 
 def create_labels(label_list):
-    """label list should be a list of tuples with the first the label name
-    and the second the label value, e.g. [(operator, GVB), (district, CENTRUM)],
-    the result you get when taking {}.items()"""
-    return ", ".join([str(name) + '=~"' + str(value) + '"' for name, value in label_list if value])
+    """Create labels for Prometheus query.
+
+    label list should be a list of tuples with the first the label name
+    and the second the label value, e.g. [(operator, GVB),
+    (district, CENTRUM)], the result you get when taking {}.items().
+    """
+    return ", ".join([str(name) + '=~"' + str(value) + '"' for name, value in
+                     label_list if value])
 
 
 def create_prom_query(query_json):
-    """ Creates a prometheus query from a json object
+    """Create a prometheus query from a json object.
 
-    example json:
-{'sum':
-    {'or': [
-        {'increase':
-            {
-                'metric': 'location_punctuality',
-                'labels': {'district': 'West'},
-                'period': '1d',
-                'offset': '1d'
-            }
-        }, 
-        {'increase':
-            {
-                'metric': 'location_punctuality',
-                'labels': {'district': 'Centrum'},
-                'period': '1d',
-                'offset': '1d'
-            }
-        }]
-    },
-'by': ['transport_type']
-}
+    Example json:
+        {'sum':
+            {'or': [
+                {'increase':
+                    {
+                        'metric': 'location_punctuality',
+                        'labels': {'district': 'West'},
+                        'period': '1d',
+                        'offset': '1d'
+                    }
+                },
+                {'increase':
+                    {
+                        'metric': 'location_punctuality',
+                        'labels': {'district': 'Centrum'},
+                        'period': '1d',
+                        'offset': '1d'
+                    }
+                }]
+            },
+        'by': ['transport_type']
+        }
     """
     res_str = ''
     for component_type, inner in query_json.items():
         if component_type == 'or':
-            res_str += ' or '.join([create_prom_query(subquery) for subquery in inner])
+            res_str += ' or '.join([create_prom_query(subquery) for subquery in
+                                   inner])
         elif component_type == 'and':
-            res_str += ' and '.join([create_prom_query(subquery) for subquery in inner])
+            res_str += ' and '.join([create_prom_query(subquery) for subquery
+                                    in inner])
         elif component_type == 'metric':
             res_str += str(inner)
         elif component_type == 'labels':
-            res_str += "{" + str(create_labels(inner.items())) + "}"
+            res_str += '{' + str(create_labels(inner.items())) + '}'
         elif component_type == 'period':
-            res_str += "[" + str(inner) + "]"
+            res_str += '[' + str(inner) + ']'
         elif component_type == 'offset':
             res_str += ' offset ' + str(inner)
         elif component_type == 'by':
             res_str += ' by (' + ','.join(inner) + ')'
         elif component_type == 'topk':
-            res_str += ' topk(' + inner['k'] + ',' + create_prom_query(inner['subquery']) + ')'
-        elif component_type == '+' or component_type == '-' or component_type == '*' or component_type == '/':
-            res_str += (" "+ component_type +" ").join([create_prom_query(subquery) for subquery in inner])
+            res_str += (' topk(' + inner['k'] + ',' +
+                        create_prom_query(inner['subquery']) + ')')
+        elif (component_type == '+' or component_type == '-' or
+              component_type == '*' or component_type == '/'):
+            res_str += (' ' + component_type + ' ').join(
+                        [create_prom_query(subquery) for subquery in inner])
         else:
-            res_str += str(component_type) + '(' + str(create_prom_query(inner)) + ')'
+            res_str += (str(component_type) + '(' +
+                        str(create_prom_query(inner)) + ')')
     return res_str
 
 
 def execute_json_prom_query(json_query):
-    """Executes the query from the json_query and returns the result"""
+    """Execute the query from the json_query and return the result."""
     query_string = create_prom_query(json_query)
     query_res = make_prom_query(query_string)
     if check_json_result(query_res):
@@ -105,7 +116,8 @@ def create_template_labels(start_template, districts=[], transport_types=[],
     subqueries = []
     for district, transport_type, operator in combinations:
         labels = create_labels(
-            [("district", district), ("transport_type", transport_type), ("operator", operator)])
+            [("district", district), ("transport_type", transport_type),
+             ("operator", operator)])
         subqueries.append(start_template % (labels, '%d', '%d'))
     return ' or '.join(subqueries), len(combinations)
 
@@ -129,12 +141,15 @@ def top_ten_bottlenecks(start_day_time, end_day_time, days, period,
     NOTE: does not consider the current day if end_day_time is after current
     time.
     """
+    # Make the query template.
     query_template = 'increase(location_punctuality{%s}[%ss] offset %ss)'
     if return_filters:
         query_template = "sum(" + ") by ("
     query_template, amount = create_template_labels(query_template, districts,
                                                     transport_types, operators,
                                                     line_numbers)
+
+    # Calculate the offset, time_range and today.
     now = datetime.now()
     seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0,
                                                 microsecond=0)).total_seconds()
@@ -142,6 +157,7 @@ def top_ten_bottlenecks(start_day_time, end_day_time, days, period,
     time_range = end_day_time - start_day_time
     today = datetime.today().weekday()
 
+    # Make the Prometheus queries and return the results.
     results = {}
     for day in range(period + 1):
         if offset > 0 and (today - day) % 7 in days:
@@ -151,8 +167,9 @@ def top_ten_bottlenecks(start_day_time, end_day_time, days, period,
                 data = get_data_json_result(result)
                 if data:
                     for metric in data:
-                        key = tuple(remove_unwanted_keys(metric['metric'],
-                                                         return_filters).items())
+                        key = tuple(
+                            remove_unwanted_keys(metric['metric'],
+                                                 return_filters).items())
                         value = float(metric['value'][1])
                         if key in results:
                             results[key] += value
@@ -161,7 +178,7 @@ def top_ten_bottlenecks(start_day_time, end_day_time, days, period,
             else:
                 print('Query to Prometheus database went wrong, status error' +
                       'code: %s' % (result['status']))
-        offset += 86400  # seconds in a day
+        offset += 86400
     results = [{'metric': dict(filt), 'value': val} for filt, val in
                results.items()]
     results.sort(key=lambda x: x['value'], reverse=True)
@@ -225,30 +242,3 @@ def donut_districts(amount=1, unit='d'):
 
     return [{key: val} for (key, val) in
             sorted(dct.items(), key=lambda kv: kv[1], reverse=True)]
-
-if __name__ == '__main__':
-    print(execute_json_prom_query(
-{'sort_desc':
-    {'sum':
-    {'or': [
-        {'increase':
-            {
-                'metric': 'location_punctuality',
-                'labels': {'district': 'West'},
-                'period': '1d',
-                'offset': '1d'
-            }
-        }, 
-        {'increase':
-            {
-                'metric': 'location_punctuality',
-                'labels': {'district': 'Centrum'},
-                'period': '1d',
-                'offset': '1d'
-            }
-        }]
-    },
-    'by': ['transport_type']
-}
-}))
-    
