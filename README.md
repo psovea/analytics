@@ -1,6 +1,14 @@
 # Analytics
 Python analytics from Prometheus DB
 
+## Coding style
+In this repository we use the PEP8 coding style. If you contribute, please make sure your code is PEP8 compliant. Install the PEP8 command line tool with this command:
+```bash
+    pip install pep8
+```
+Then you can just use ```pep8 your_python_file.py``` in your terminal to see if your code is PEP8 compliant.
+
+
 ## Fetch prometheus
 In fetch_prometheus.py functions are written that query the Prometheus database. Also some functions are made that create the queries and its labels.
 
